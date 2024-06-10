@@ -2,3 +2,4 @@ config.json
 env
 data
 *.session
+*.session-journal
