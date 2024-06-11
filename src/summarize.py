@@ -12,8 +12,6 @@ for message in messages:
             continue
         trimmed_messages={}
         trimmed_messages["message"]=(message['message'])
-        
-        
         trimmed_messages_reaction_count=0
         for reaction in message['reactions']['results']:
             trimmed_messages_reaction_count+=reaction['count']
@@ -55,7 +53,7 @@ with open('data/interim/trimmed_messages.csv') as f:
 # check if the table exists
 if os.path.exists(db_path):
     os.remove(db_path)
-engine = create_engine("sqlite:///telegram.db")
+engine = create_engine("sqlite:///data/telegram.db")
 try:
     df.to_sql("telegram", engine, index=False)
 except:
