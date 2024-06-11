@@ -1,5 +1,7 @@
 import json
 import csv
+import ast
+agentic=False
 with open('data/raw/channel_messages.json') as f:
     messages = json.load(f)
 # trim the messages to only include the message text
@@ -39,6 +41,14 @@ from langchain_community.llms import Ollama
 from langchain_community.utilities import SQLDatabase
 from sqlalchemy import create_engine
 import pandas as pd
+
+
+from langchain.prompts import PromptTemplate
+
+
+
+
+
 db_path="data/telegram.db"
 with open('data/interim/trimmed_messages.csv') as f:
     df = pd.read_csv(f)
@@ -46,22 +56,58 @@ with open('data/interim/trimmed_messages.csv') as f:
 if os.path.exists(db_path):
     os.remove(db_path)
 engine = create_engine("sqlite:///telegram.db")
-df.to_sql("telegram", engine, index=False)
-
+try:
+    df.to_sql("telegram", engine, index=False)
+except:
+    print("Table already exists")
 
 db = SQLDatabase(engine=engine)
 print(db.dialect)
 print(db.get_usable_table_names())
-result=db.run("SELECT * FROM telegram WHERE reaction_count > 100;")
 # update db to use the new table
 # db.update_table("telegram")
 def _handle_error(error) -> str:
     return str(error)[:50]
-
-print("result:",result)
 from langchain_community.agent_toolkits import create_sql_agent
 llm = Ollama(
     model="phi3"
 )
-agent_executor = create_sql_agent(llm, db=db, max_iterations=25,handle_parsing_errors="_handle_error",verbose=True)
-agent_executor.invoke({"input": "first, query all the messages from the 'telegram' table that have >50 reaction_count . Next, summarize and tell me, what are the main trends in the messages that have >50 reaction_count, "})
+if agentic==True:
+    agent_executor = create_sql_agent(llm, db=db, max_iterations=25,handle_parsing_errors="_handle_error",verbose=True)
+    agent_executor.invoke({"input": "first, query all the messages from the 'telegram' table that have >50 reaction_count . Next, summarize and tell me, what are the main trends in the messages that have >50 reaction_count, "})
+else:
+    result=db.run("SELECT * FROM telegram WHERE reaction_count > 100;")
+
+    # Define the prompt template
+    prompt_template = PromptTemplate(
+        input_variables=["text", "reactions", "likes"],
+        template="""
+        Analyze the following post:
+
+        Text: {text}
+
+        Reactions: {reactions}
+
+        Number of Likes: {likes}
+
+        Provide an analysis including the general sentiment, the level of engagement, and any other notable observations.
+        """
+    )
+    # Function to analyze each post
+    def analyze_post(post):
+        text, reactions, likes=post
+        prompt = prompt_template.format(text=text, reactions=reactions, likes=likes)
+        response = llm(prompt)
+        return response
+    # Remove any extraneous escape characters
+    # result = result.replace("\\n", "\n").replace('\\"', '"')
+
+    # Evaluate the cleaned string as a Python expression
+    tuple_list = ast.literal_eval(result)
+    # Analyze each post in the string list
+    analysis_results = [analyze_post(post) for post in tuple_list]
+
+    # Print the analysis results
+    for result in analysis_results:
+        print(result)
+    

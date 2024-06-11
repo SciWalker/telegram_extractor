@@ -2,7 +2,6 @@ import configparser
 import json
 import asyncio
 from datetime import date, datetime
-
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
 from telethon.tl.functions.messages import (GetHistoryRequest)
