@@ -74,7 +74,7 @@ if agentic==True:
     agent_executor = create_sql_agent(llm, db=db, max_iterations=25,handle_parsing_errors="_handle_error",verbose=True)
     agent_executor.invoke({"input": "first, query all the messages from the 'telegram' table that have >50 reaction_count . Next, summarize and tell me, what are the main trends in the messages that have >50 reaction_count, "})
 else:
-    result=db.run("SELECT * FROM telegram WHERE reaction_count > 100;")
+    result=db.run("SELECT * FROM telegram WHERE reaction_count > 10;")
 
     # Define the prompt template
     prompt_template = PromptTemplate(
@@ -99,13 +99,13 @@ else:
         return response
     # Remove any extraneous escape characters
     # result = result.replace("\\n", "\n").replace('\\"', '"')
-
     # Evaluate the cleaned string as a Python expression
     tuple_list = ast.literal_eval(result)
     # Analyze each post in the string list
     analysis_results = [analyze_post(post) for post in tuple_list]
 
-    # Print the analysis results
-    for result in analysis_results:
-        print(result)
+    # save the results to a file
+    with open('data/processed/analysis_results.txt', 'w') as f:
+        for result in analysis_results:
+            f.write(result + '\n')
     
