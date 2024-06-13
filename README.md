@@ -9,7 +9,7 @@ steps:
     "username" : <tg_username>
 }
 2. run the get_messages.py to crawl through a telegram channel
-3. run summarize.py which utilizes the ollama+llm to summarize the top messages by reaction counts
+3. run summarize.py which utilizes the ollama+llm to summarize the top messages by reaction counts (you need to get ollama installed, can refer to https://ollama.com)
 
 future works:
 - Sentiment analysis
