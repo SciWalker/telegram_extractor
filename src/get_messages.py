@@ -88,7 +88,7 @@ async def main(phone):
         if params['total_count_limit'] != 0 and total_messages >= params['total_count_limit']:
             break
 
-    with open('data/channel_messages.json', 'w') as outfile:
+    with open('data/raw/channel_messages.json', 'w') as outfile:
         json.dump(all_messages, outfile, cls=DateTimeEncoder)
 
 with client:
